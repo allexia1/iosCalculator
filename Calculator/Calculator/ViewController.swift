@@ -107,7 +107,8 @@ class ViewController: UIViewController {
         button.backgroundColor = .gray
         button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
         button.setTitleColor(.black, for: .normal)
-//        button.addTarget(self, action: #selector(didTapNumbers(_:)), for: .touchUpInside)
+        button.addTarget(self, action: #selector(clearResult(_:)), for: .touchUpInside)
+        //button.addTarget(self, action: #selector(clearResult(_:)), for: .touchUpInside)
         return button
     }()
     
@@ -118,7 +119,8 @@ class ViewController: UIViewController {
         button.backgroundColor = .gray
         button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
         button.setTitleColor(.black, for: .normal)
-//        button.addTarget(self, action: #selector(didTapNumbers(_:)), for: .touchUpInside)
+        button.tag = 6
+        button.addTarget(self, action: #selector(operationPressed(_:)), for: .touchUpInside)
         return button
     }()
     
@@ -129,7 +131,8 @@ class ViewController: UIViewController {
         button.backgroundColor = .gray
         button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
         button.setTitleColor(.black, for: .normal)
-//        button.addTarget(self, action: #selector(didTapNumbers(_:)), for: .touchUpInside)
+        button.tag = 7
+        button.addTarget(self, action: #selector(operationPressed(_:)), for: .touchUpInside)
         return button
     }()
     
@@ -140,7 +143,8 @@ class ViewController: UIViewController {
         button.backgroundColor = .orange
         button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
         button.setTitleColor(.white, for: .normal)
-//        button.addTarget(self, action: #selector(didTapNumbers(_:)), for: .touchUpInside)
+        button.tag = 5
+        button.addTarget(self, action: #selector(operationPressed(_:)), for: .touchUpInside)
         return button
     }()
     
@@ -187,7 +191,8 @@ class ViewController: UIViewController {
         button.backgroundColor = .orange
         button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
         button.setTitleColor(.white, for: .normal)
-//        button.addTarget(self, action: #selector(didTapNumbers(_:)), for: .touchUpInside)
+        button.tag = 4
+        button.addTarget(self, action: #selector(operationPressed(_:)), for: .touchUpInside)
         return button
     }()
     
@@ -234,7 +239,8 @@ class ViewController: UIViewController {
         button.backgroundColor = .orange
         button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
         button.setTitleColor(.white, for: .normal)
-//        button.addTarget(self, action: #selector(didTapNumbers(_:)), for: .touchUpInside)
+        button.tag = 3
+        button.addTarget(self, action: #selector(operationPressed(_:)), for: .touchUpInside)
         return button
     }()
     
@@ -281,7 +287,8 @@ class ViewController: UIViewController {
         button.backgroundColor = .orange
         button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
         button.setTitleColor(.white, for: .normal)
-        //button.addTarget(self, action: #selector(didTapNumbers(_:)), for: .touchUpInside)
+        button.tag = 2
+        button.addTarget(self, action: #selector(operationPressed(_:)), for: .touchUpInside)
         return button
     }()
     
@@ -317,19 +324,23 @@ class ViewController: UIViewController {
         button.backgroundColor = .orange
         button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
         button.setTitleColor(.white, for: .normal)
-        //button.addTarget(self, action: #selector(didTapNumbers(_:)), for: .touchUpInside)
+        button.tag = 1
+        button.addTarget(self, action: #selector(operationPressed(_:)), for: .touchUpInside)
         return button
     }()
     
-    //var holder = UIView()
+    var firstNumber = 0
+    var resultNumber = 0
+    var currentOperations: Operation?
+    
+    enum Operation{
+        case plus, minus, versus, division, invertion, percent
+    }
     
     override func viewDidLoad() {
         
         setupLayout()
         setupUIConstraint()
-//        resultLabel.frame = CGRect(x: 20, y: clearButton.frame.origin.y - 110.0, width: view.frame.size.width - 40, height: 100)
-//        holder.addSubview(resultLabel)
-//
     }
     
     private func setupUIConstraint() {
@@ -350,11 +361,7 @@ class ViewController: UIViewController {
         view.backgroundColor = .black
     }
     
-//    private func setupNumberPad() {
-//        let fontSize:CGFloat = 25
-//        let buttonSize
-//    }
-//
+
     @objc private func didTapNumbers(_ sender: UIButton) {
         let tag = sender.tag - 1
         
@@ -363,10 +370,79 @@ class ViewController: UIViewController {
         //o texto na label é igual ao texto + a tag na frente dele
         } else if let text = resultLabel.text {
         resultLabel.text = "\(text)\(tag)"
-        //print(sender.currentTitle)
         }
     }
     
+    @objc private func clearResult(_ sender: UIButton) {
+        resultLabel.text = "0"
+        currentOperations = nil
+        firstNumber = 0
+    }
+    
+    @objc func operationPressed(_ sender: UIButton) {
+        let tag = sender.tag
+        if let text = resultLabel.text, let value = Int(text), firstNumber == 0 {
+            firstNumber = value
+            resultLabel.text = "0"
+        }
+        
+        if tag == 1 {
+            if let operation = currentOperations {
+                var secondNumber = 0
+                if let text = resultLabel.text, let value = Int(text) {
+                    secondNumber = value
+                }
+                
+                switch operation {
+                case .plus:
+                    //realiza operação
+                    let result = firstNumber + secondNumber
+                    secondNumber = 0
+                    //mostra o resultado na label
+                    resultLabel.text = "\(result)"
+                    firstNumber = 0
+                case .minus:
+                    let result = firstNumber - secondNumber
+                    secondNumber = 0
+                    resultLabel.text = "\(result)"
+                case .versus:
+                    let result = firstNumber * secondNumber
+                    secondNumber = 0
+                    resultLabel.text = "\(result)"
+                case .division:
+                    let result = firstNumber / secondNumber
+                    secondNumber = 0
+                    resultLabel.text = "\(result)"
+                case .invertion:
+                    let result = firstNumber * -1
+                    resultLabel.text = "\(result)"
+                case .percent:
+                    let percent = secondNumber / 100
+                    let result = firstNumber * (1 + percent)
+                    resultLabel.text = "\(result)"
+                }
+            }
+        }
+        
+        else if tag == 2 {
+            currentOperations = .plus
+        }
+        else if tag == 3 {
+            currentOperations = .minus
+        }
+        else if tag == 4 {
+            currentOperations = .versus
+        }
+        else if tag == 5 {
+            currentOperations = .division
+        }
+        else if tag == 6 {
+            currentOperations = .invertion
+        }
+        else if tag == 7 {
+            currentOperations = .percent
+        }
+    }
     
 
 
